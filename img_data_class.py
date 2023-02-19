@@ -9,7 +9,7 @@ class ImageDataset(Dataset):
         self.transform = transform
         self.src_folder = src_folder
         self.img_list = os.listdir(src_folder)
-        
+
     def __len__(self):
         return len(self.img_list)
 
@@ -18,4 +18,4 @@ class ImageDataset(Dataset):
             img_name = self.img_list[index]
             img = Image.open(os.path.join(self.src_folder,img_name))
             return self.transform(img)
-        
+
