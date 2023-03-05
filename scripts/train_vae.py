@@ -35,8 +35,9 @@ def parse_arg():
 
 
 def loss_function(recon_x, x, mu, log_var):
-    bce = nn.CrossEntropyLoss(reduction='sum')
-    BCE = bce(recon_x.flatten(1), x.flatten(1))
+    #bce = nn.CrossEntropyLoss(reduction='sum')
+    mse = nn.MSELoss()
+    BCE = mse(recon_x, x)
     KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
     return BCE + KLD
 
