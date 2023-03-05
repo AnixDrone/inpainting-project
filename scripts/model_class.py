@@ -1,6 +1,15 @@
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
+from torchvision import models
+
+def initialize_model(output_size):
+    model = models.resnet50(weights='ResNet50_Weights.IMAGENET1K_V1')
+    for param in model.parameters():
+        param.requires_grad = False
+    num_ftrs = model.fc.in_features
+    model.fc = nn.Linear(num_ftrs, output_size)
+    return model
 
 class InpaintingVAE(nn.Module):
     def __init__(self,
@@ -19,20 +28,21 @@ class InpaintingVAE(nn.Module):
         
         
             
-        self.encoder = nn.Sequential(
-            nn.Conv2d(in_channels, features_d, 4, 2, 1), # 64 -> 32
-            nn.InstanceNorm2d(features_d, affine=True),
-            nn.LeakyReLU(0.2),
-            self._encoder_block(features_d, features_d * 2, 4, 2, 1),# 32 -> 16
-            self._encoder_block(features_d * 2, features_d * 4, 4, 2, 1),# 16 - > 8
-            self._encoder_block(features_d * 4, features_d * 8, 4, 2, 1), # 8 -> 4
-        )
+        # self.encoder = nn.Sequential(
+        #     nn.Conv2d(in_channels, features_d, 4, 2, 1), # 64 -> 32
+        #     nn.InstanceNorm2d(features_d, affine=True),
+        #     nn.LeakyReLU(0.2),
+        #     self._encoder_block(features_d, features_d * 2, 4, 2, 1),# 32 -> 16
+        #     self._encoder_block(features_d * 2, features_d * 4, 4, 2, 1),# 16 - > 8
+        #     self._encoder_block(features_d * 4, features_d * 8, 4, 2, 1), # 8 -> 4
+        # )
 
         #self.fc_mu = nn.Linear(features_d * 8 * 2 * 2, latent_dim)
         #self.fc_var = nn.Linear(features_d * 8 * 2 * 2, latent_dim)
+        self.encoder = initialize_model(latent_dim)
         
-        self.fc_mu = nn.Linear(131072, latent_dim)
-        self.fc_var = nn.Linear(131072, latent_dim)
+        self.fc_mu = nn.Linear(latent_dim, latent_dim)
+        self.fc_var = nn.Linear(latent_dim, latent_dim)
         
         
         self.decoder_input = nn.Linear(latent_dim, 131072)
@@ -81,7 +91,7 @@ class InpaintingVAE(nn.Module):
     def encode(self,input):
         result = self.encoder(input)
         #print(result.shape)
-        result = result.flatten(1)
+        #result = result.flatten(1)
         
         if torch.isnan(result).any().item():
             print(result)
