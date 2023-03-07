@@ -90,7 +90,7 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             recon_img, mu, log_var = model(img)
             loss = loss_function(recon_img, img, mu, log_var)
-            print(batch_idx,loss.item())
+            #print(batch_idx,loss.item())
             train_epoch_loss += loss.item()
             loss.backward()
             optimizer.zero_grad()
@@ -99,9 +99,9 @@ if __name__ == '__main__':
             model.eval()
             for batch_idx, img in enumerate(test_dl):
                 img = img.to(device)
-                input_img = augment_image(random_erase_tr, img).to(device)
+                #input_img = augment_image(random_erase_tr, img).to(device)
 
-                recon_img, mu, log_var = model(input_img)
+                recon_img, mu, log_var = model(img)
                 loss = loss_function(recon_img, img, mu, log_var)
                 test_epoch_loss += loss.item()
 

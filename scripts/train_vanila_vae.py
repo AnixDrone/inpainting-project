@@ -83,15 +83,15 @@ if __name__ == '__main__':
         train_epoch_loss = 0
         test_epoch_loss = 0
         model.train()
-        #for batch_idx, img in tqdm.tqdm(enumerate(train_dl), total=len(train_dl)):
-        for batch_idx, img in enumerate(train_dl):
+        for batch_idx, img in tqdm.tqdm(enumerate(train_dl), total=len(train_dl)):
+        #for batch_idx, img in enumerate(train_dl):
             #input_img = augment_image(random_erase_tr, img).to(device)
             img = img.to(device)
 
             optimizer.zero_grad()
             recon_img, _ , mu, log_var = model(img)
             loss = loss_function(recon_img, img, mu, log_var)
-            print(batch_idx,loss.item())
+            #print(batch_idx,loss.item())
             train_epoch_loss += loss.item()
             loss.backward()
             optimizer.zero_grad()
