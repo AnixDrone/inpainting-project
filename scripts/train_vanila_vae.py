@@ -91,7 +91,6 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             recon_img, _ , mu, log_var = model(img)
             loss = loss_function(recon_img, img, mu, log_var)
-            #print(batch_idx,loss.item())
             train_epoch_loss += loss.item()
             loss.backward()
             optimizer.zero_grad()
@@ -105,7 +104,9 @@ if __name__ == '__main__':
                 recon_img, _ , mu, log_var = model(img)
                 loss = loss_function(recon_img, img, mu, log_var)
                 test_epoch_loss += loss.item()
-
+        print(epoch)
+        print(train_epoch_loss/len(train_dl))
+        print(test_epoch_loss/len(test_dl))
         train_epoch_list.append(train_epoch_loss/len(train_dl))
         test_epoch_list.append(test_epoch_loss/len(test_dl))
         create_if_not_exists("models")
