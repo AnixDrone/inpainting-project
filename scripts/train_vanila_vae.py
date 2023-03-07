@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 import torch
 from torch import nn
-from model_class import InpaintingVAE
+from vannila_vae import VanillaVAE
 import torch.optim as optim
 import time
 import tqdm
@@ -37,9 +37,9 @@ def parse_arg():
 def loss_function(recon_x, x, mu, log_var):
     #bce = nn.CrossEntropyLoss(reduction='sum')
     mse = nn.MSELoss()
-    BCE = mse(recon_x, x)
+    MSE = mse(recon_x, x)
     KLD = -0.5 * torch.sum(1 + log_var - mu.pow(2) - log_var.exp())
-    return BCE + KLD
+    return MSE + KLD
 
 
 def augment_image(random_erase_fn, img):
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     tr = transforms.Compose(
         [
-            transforms.Resize((256, 256)),
+            transforms.Resize((64, 64)),
             transforms.ToTensor()
         ],
     )
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     test_dl = DataLoader(test, BATCH_SIZE, shuffle=True)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = InpaintingVAE(3, LATENT_SIZE, device).to(device)
+    model = VanillaVAE(3, LATENT_SIZE).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -83,12 +83,13 @@ if __name__ == '__main__':
         train_epoch_loss = 0
         test_epoch_loss = 0
         model.train()
-        for batch_idx, img in tqdm.tqdm(enumerate(train_dl), total=len(train_dl)):
+        #for batch_idx, img in tqdm.tqdm(enumerate(train_dl), total=len(train_dl)):
+        for batch_idx, img in enumerate(train_dl):
             #input_img = augment_image(random_erase_tr, img).to(device)
             img = img.to(device)
 
             optimizer.zero_grad()
-            recon_img, mu, log_var = model(img)
+            recon_img, _ , mu, log_var = model(img)
             loss = loss_function(recon_img, img, mu, log_var)
             print(batch_idx,loss.item())
             train_epoch_loss += loss.item()
@@ -99,9 +100,9 @@ if __name__ == '__main__':
             model.eval()
             for batch_idx, img in enumerate(test_dl):
                 img = img.to(device)
-                input_img = augment_image(random_erase_tr, img).to(device)
+                #input_img = augment_image(random_erase_tr, img).to(device)
 
-                recon_img, mu, log_var = model(input_img)
+                recon_img, _ , mu, log_var = model(img)
                 loss = loss_function(recon_img, img, mu, log_var)
                 test_epoch_loss += loss.item()
 
